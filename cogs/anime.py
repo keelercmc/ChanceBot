@@ -1,4 +1,5 @@
 from discord.ext import commands
+from config import anime_channel
 
 
 class Anime(commands.Cog):
