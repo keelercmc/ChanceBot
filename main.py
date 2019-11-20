@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 import os
-from config import prefix, moderators, main_channel
+from config import prefix, moderators, main_channel, music_channel, osrs_channel, poll_channel
+import pyowm
 
 client = commands.Bot(command_prefix=prefix)
 client.remove_command('help')
@@ -26,13 +27,24 @@ async def on_message(message):
 @client.command()  # displays help dialogue
 async def help(ctx):
     if str(ctx.channel) == main_channel:
-        embed = discord.Embed(title="Commands")
-        embed.add_field(name="Help", value="#general\n\nShows this block.")
-        embed.add_field(name="Messages", value="#general\n\nShows the number of messages the user has sent.")
-        embed.add_field(name="Leaderboard", value="#general\n\nShows a ranking of the users with the most messages.")
-        embed.add_field(name="Stats", value="#osrs\n\nShows a user's OSRS stats.")
-        embed.add_field(name="Prices", value="#osrs\n\nShows a an item's trade value.")
-        embed.add_field(name="Play", value="#music\n\nN/A.")
+        embed = discord.Embed(title='Commands')
+        embed.add_field(name='Help', value='#' + main_channel + '\n\nShows this block.')
+        embed.add_field(name='Messages', value='#' + main_channel + '\n\nShows the number of messages the user has sent.')
+        embed.add_field(name='Leaderboard', value='#' + main_channel + '\n\nShows a ranking of the users with the most messages.')
+        embed.add_field(name='Stats', value='#' + osrs_channel + '\n\nShows a user\'s OSRS stats.')
+        embed.add_field(name='Prices', value='#' + osrs_channel + '\n\nShows an item\'s trade value.')
+        embed.add_field(name='Play', value='#' + music_channel + '\n\nN/A.')
+        await ctx.channel.send(content=None, embed=embed)
+
+
+@client.command()  # displays mod help dialogue
+async def modhelp(ctx):
+    if str(ctx.channel) == main_channel and str(ctx.author) in moderators:
+        embed = discord.Embed(title='Commands')
+        embed.add_field(name='ModHelp', value='#' + main_channel + '\n\nShows this block.')
+        embed.add_field(name='Clear', value='#' + main_channel + '\n\nClears messages.')
+        embed.add_field(name='Post', value='#' + poll_channel + '\n\nPosts a new poll question.')
+        embed.add_field(name='Results', value='#' + poll_channel + '\n\nShows the results of a poll.')
         await ctx.channel.send(content=None, embed=embed)
 
 
@@ -81,6 +93,20 @@ async def leaderboard(ctx):
     await ctx.channel.send('```Leaderboard\n\n' + response + '```')
 
 
+@client.command()  # shows the weather stats in a given city using OpenWeatherMap API
+async def weather(ctx):
+    if str(ctx.channel) == main_channel:
+        location = ctx.message.content.split(prefix + 'weather ')[1]
+        observation = owm.weather_at_place(location)
+        w = observation.get_weather()
+        f = w.get_temperature('fahrenheit')
+        c = w.get_temperature('celsius')
+        await ctx.channel.send('The temperature in ' + location.title() + ' is ' +
+                               str(round(f['temp'])) + 'F / ' + str(round(c['temp'])) + 'C.\n' +
+                               'High: ' + str(round(f['temp_max'])) + 'F / ' + str(round(c['temp_max'])) +
+                               'C, Low: ' + str(round(f['temp_min'])) + 'F / ' + str(round(c['temp_min'])) + 'C.')
+
+
 @client.command()  # clears messages
 async def clear(ctx):
     if str(ctx.message.author) in moderators:
@@ -96,5 +122,12 @@ def read_token():  # reads token in
         return lines[0].strip()
 
 
+def read_owm():
+    with open('owm_key.txt', 'r') as f:
+        lines = f.readlines()
+        return lines[0].strip()
+
+
+owm = pyowm.OWM(read_owm())
 token = read_token()
 client.run(token)
