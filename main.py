@@ -1,10 +1,10 @@
+import os
 import discord
 from discord.ext import commands
-import os
 from config import prefix, moderators, main_channel, music_channel, osrs_channel, poll_channel
 import pyowm
 
-client = commands.Bot(command_prefix=prefix)
+client = commands.Bot(command_prefix=prefix, case_insensitive=True)
 client.remove_command('help')
 
 for filename in os.listdir('./cogs'):
@@ -31,9 +31,13 @@ async def help(ctx):
         embed.add_field(name='Help', value='#' + main_channel + '\n\nShows this block.')
         embed.add_field(name='Messages', value='#' + main_channel + '\n\nShows the number of messages the user has sent.')
         embed.add_field(name='Leaderboard', value='#' + main_channel + '\n\nShows a ranking of the users with the most messages.')
+        embed.add_field(name='Weather', value='#' + main_channel + '\n\nShows the temperature of a city.')
         embed.add_field(name='Stats', value='#' + osrs_channel + '\n\nShows a user\'s OSRS stats.')
         embed.add_field(name='Prices', value='#' + osrs_channel + '\n\nShows an item\'s trade value.')
-        embed.add_field(name='Play', value='#' + music_channel + '\n\nN/A.')
+        embed.add_field(name='Join', value='#' + music_channel + '\n\nRequests bot to join your voice chat.')
+        embed.add_field(name='Leave', value='#' + music_channel + '\n\nRequests bot to leave your voice chat.')
+        embed.add_field(name='Play', value='#' + music_channel + '\n\nPlays a Spotify URL')
+        embed.add_field(name='Volume', value='#' + music_channel + '\n\nAdjusts volume (0-100)')
         await ctx.channel.send(content=None, embed=embed)
 
 
@@ -93,15 +97,14 @@ async def leaderboard(ctx):
     await ctx.channel.send('```Leaderboard\n\n' + response + '```')
 
 
-@client.command()  # shows the weather stats in a given city using OpenWeatherMap API
-async def weather(ctx):
+@client.command(aliases=['w'])  # shows the weather stats in a given city using OpenWeatherMap API
+async def weather(ctx, city):
     if str(ctx.channel) == main_channel:
-        location = ctx.message.content.split(prefix + 'weather ')[1]
-        observation = owm.weather_at_place(location)
+        observation = owm.weather_at_place(city)
         w = observation.get_weather()
         f = w.get_temperature('fahrenheit')
         c = w.get_temperature('celsius')
-        await ctx.channel.send('The temperature in ' + location.title() + ' is ' +
+        await ctx.channel.send('The temperature in ' + city.title() + ' is ' +
                                str(round(f['temp'])) + 'F / ' + str(round(c['temp'])) + 'C.\n' +
                                'High: ' + str(round(f['temp_max'])) + 'F / ' + str(round(c['temp_max'])) +
                                'C, Low: ' + str(round(f['temp_min'])) + 'F / ' + str(round(c['temp_min'])) + 'C.')
@@ -122,7 +125,7 @@ def read_token():  # reads token in
         return lines[0].strip()
 
 
-def read_owm():
+def read_owm():  # reads OpenWeatherMap API key
     with open('owm_key.txt', 'r') as f:
         lines = f.readlines()
         return lines[0].strip()

@@ -3,27 +3,26 @@ from config import prefix, osrs_channel
 from OSRSBytes import Hiscores, Items
 
 
-class Anime(commands.Cog):
+class Osrs(commands.Cog):
 
     def __init__(self, client):
         self.client = client
 
-    @commands.command()  # makes API request to look up a given user's stats
-    async def stats(self, ctx):
+    @commands.command(aliases=['hiscores'])  # makes API request to look up a given user's stats
+    async def stats(self, ctx, player, skill, attribute):
         if str(ctx.channel) == osrs_channel:
-            query = ctx.message.content.split(' ')
 
-            if query[3] == 'x' or query[3] == 'xp':
-                query[3] = 'experience'
-            elif query[3] == 'l' or query[3] == 'lvl':
-                query[3] = 'level'
-            elif query[3] == 'r':
-                query[3] = 'rank'
+            if attribute == 'x' or attribute == 'xp':
+                attribute = 'experience'
+            elif attribute == 'l' or attribute == 'lvl':
+                attribute = 'level'
+            elif attribute == 'r':
+                attribute = 'rank'
 
-            player = Hiscores(query[1], 'N')
-            response = player.skill(query[2], query[3])
-            await ctx.channel.send(query[1].title() + '\'s ' + query[2].title() + ' ' +
-                                   query[3] + ' is ' + str(f'{int(response):,d}') + '.')
+            stats = Hiscores(player, 'N')
+            response = stats.skill(skill, attribute)
+            await ctx.channel.send(player.title() + '\'s ' + skill.title() + ' ' +
+                                   attribute + ' is ' + str(f'{int(response):,d}') + '.')
 
     @commands.command()  # makes API request to look up a given item's market value
     async def prices(self, ctx):
@@ -36,4 +35,4 @@ class Anime(commands.Cog):
 
 
 def setup(client):
-    client.add_cog(Anime(client))
+    client.add_cog(Osrs(client))
