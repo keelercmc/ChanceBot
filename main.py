@@ -97,7 +97,7 @@ async def leaderboard(ctx):
     await ctx.channel.send('```Leaderboard\n\n' + response + '```')
 
 
-@client.command(aliases=['w'])  # shows the weather stats in a given city using OpenWeatherMap API
+@client.command()  # shows the weather stats in a given city using OpenWeatherMap API
 async def weather(ctx, city):
     if str(ctx.channel) == main_channel:
         observation = owm.weather_at_place(city)
