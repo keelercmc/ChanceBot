@@ -36,8 +36,8 @@ async def help(ctx):
         embed.add_field(name='Prices', value='#' + osrs_channel + '\n\nShows an item\'s trade value.')
         embed.add_field(name='Join', value='#' + music_channel + '\n\nRequests bot to join your voice chat.')
         embed.add_field(name='Leave', value='#' + music_channel + '\n\nRequests bot to leave your voice chat.')
-        embed.add_field(name='Play', value='#' + music_channel + '\n\nPlays a Spotify URL')
-        embed.add_field(name='Volume', value='#' + music_channel + '\n\nAdjusts volume (0-100)')
+        embed.add_field(name='Play', value='#' + music_channel + '\n\nPlays a Spotify URL.')
+        embed.add_field(name='Volume', value='#' + music_channel + '\n\nAdjusts volume (0-100).')
         await ctx.channel.send(content=None, embed=embed)
 
 
